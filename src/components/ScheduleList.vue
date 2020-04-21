@@ -13,6 +13,7 @@
       v-for="schedule in items"
       :key="schedule.id"
       :schedule="schedule"
+      :listType="listType"
       :isDeskSchedule="deskSchedule"
     ></ScheduleItem>
 
@@ -41,9 +42,9 @@ export default {
       default: () => []
     },
 
-    deskSchedule: {
-      type: Boolean,
-      default: false
+    listType: {
+      type: String,
+      default: ""
     }
   },
 
@@ -53,9 +54,15 @@ export default {
     };
   },
 
+  computed: {
+    deskSchedule() {
+      return this.listType === "deskList";
+    }
+  },
+
   methods: {
     ...mapMutations({
-      addToSchedule: "schedule/addToSchedule"
+      moveScheduleCard: "schedule/moveScheduleCard"
     }),
 
     onDragLeave() {
@@ -67,9 +74,7 @@ export default {
         event.dataTransfer.getData("schedule")
       );
       this.isDragOver = false;
-      if (from === "deskList" && event.currentTarget.id === "shcedule-list") {
-        this.addToSchedule(schedule);
-      }
+      this.moveScheduleCard({ schedule, from, to: this.listType });
     }
   }
 };

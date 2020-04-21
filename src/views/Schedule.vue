@@ -2,10 +2,16 @@
   <div class="schedule">
     <section class="schedule__left-section">
       <h2>Unscheduled</h2>
-      <ScheduleList :items="unsheduledList"></ScheduleList>
+      <ScheduleList
+        :items="unScheduledList"
+        :list-type="'unScheduledList'"
+      ></ScheduleList>
 
       <h2>Recently Updated</h2>
-      <ScheduleList :items="recentlyUpdatedList"></ScheduleList>
+      <ScheduleList
+        :items="resentlyUpdatedList"
+        :list-type="'resentlyUpdatedList'"
+      ></ScheduleList>
     </section>
 
     <div class="schedule__right-section">
@@ -17,7 +23,7 @@
 <script>
 import ScheduleList from "@/components/ScheduleList.vue";
 import ScheduleDesk from "@/components/ScheduleDesk.vue";
-import { mapGetters } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   name: "Home",
@@ -32,9 +38,9 @@ export default {
   },
 
   computed: {
-    ...mapGetters({
-      unsheduledList: "schedule/unsheduledList",
-      recentlyUpdatedList: "schedule/recentlyUpdatedList"
+    ...mapState({
+      unScheduledList: state => state.schedule.unScheduledList,
+      resentlyUpdatedList: state => state.schedule.resentlyUpdatedList
     })
   }
 };

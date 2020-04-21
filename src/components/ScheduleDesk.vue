@@ -4,24 +4,28 @@
       <span
         class="schedule-desk__time-item"
         v-for="time in timeline"
-        :key="time"
+        :key="time.text"
       >
-        {{ time }}
+        {{ time.text }}
       </span>
     </div>
 
     <div class="schedule-desk__main-section">
-      <ScheduleList :items="deskList" deskSchedule></ScheduleList>
+      <ScheduleList :items="deskList" :list-type="'deskList'"></ScheduleList>
 
       <ScheduleDeskSection
         v-for="(time, index) in timeline"
-        :key="time"
+        :key="time.text"
         :index="index"
-        :time="time"
+        :time="timeline[index - 1]"
         class="schedule-desk__row"
       ></ScheduleDeskSection>
 
-      <ScheduleDeskSection :index="timeline.length"></ScheduleDeskSection>
+      <ScheduleDeskSection
+        :index="timeline.length"
+        :time="timeline[timeline.length - 1]"
+        class="schedule-desk__row"
+      ></ScheduleDeskSection>
     </div>
   </div>
 </template>
@@ -41,18 +45,14 @@ export default {
 
   data() {
     return {
-      scheduleDesk: {
-        from: 5,
-        to: 15,
-        step: 30
-      },
       timeline: []
     };
   },
 
   computed: {
     ...mapState({
-      deskList: state => state.schedule.deskList
+      deskList: state => state.schedule.deskList,
+      scheduleDesk: state => state.schedule.scheduleDesk
     })
   },
 
@@ -67,8 +67,14 @@ export default {
       index += this.scheduleDesk.step
     ) {
       const hour = Math.floor(index / 60);
-      const minutes = index % 60 === 0 ? "00" : index % 60; // TODO: make more responsive for different time steps
-      this.timeline.push(`${hour}:${minutes}`);
+      const minutes = index % 60; // TODO: make more responsive for different time steps
+      const stringMinutes = minutes === 0 ? "00" : minutes;
+
+      this.timeline.push({
+        text: `${hour}:${stringMinutes}`,
+        hour,
+        minutes
+      });
     }
   }
 };

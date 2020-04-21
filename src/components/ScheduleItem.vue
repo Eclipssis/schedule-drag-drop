@@ -2,9 +2,10 @@
   <div
     class="schedule-item"
     :class="{
-      'schedule-item--overlay': isDeskSchedule
+      'schedule-item--overlay': isDeskSchedule,
+      'schedule-item--long': schedule.duration >= 30
     }"
-    :style="getPositionOnDesk"
+    :style="[getPositionOnDesk, setCardHeight]"
     draggable="true"
     @dragstart="dragStart"
   >
@@ -26,7 +27,8 @@
       </div>
 
       <div class="schedule-item__duration" v-if="isDeskSchedule">
-        {{ schedule.duration }}
+        {{ schedule.deskTimeStart.text }} - {{ getCardTimeEnd }} |
+        {{ schedule.duration | durationToString }}
       </div>
     </div>
 
@@ -44,7 +46,9 @@
         v-if="schedule.duration"
       >
         <i class="info-panel__icon icon-clock"></i>
-        <span class="info-panel__secondary-text">{{ schedule.duration }}</span>
+        <span class="info-panel__secondary-text">{{
+          schedule.duration | durationToString
+        }}</span>
       </div>
 
       <div
@@ -63,6 +67,7 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
 export default {
   name: "ScheduleItem",
 
@@ -72,29 +77,71 @@ export default {
       default: () => {}
     },
 
+    listType: {
+      type: String,
+      default: ""
+    },
+
     isDeskSchedule: {
       type: Boolean,
       default: false
     }
   },
 
+  data() {
+    return {
+      sectionHeight: 57
+    };
+  },
+
   computed: {
+    ...mapState({
+      scheduleDesk: state => state.schedule.scheduleDesk
+    }),
+
     getPositionOnDesk() {
-      const sectionHeight = 57;
+      let zIndex = 0;
+      if (this.schedule.deskTimeStart) {
+        zIndex =
+          this.schedule.deskTimeStart.hour * 60 +
+          this.schedule.deskTimeStart.minutes;
+      }
       const overlayStyles = {
-        top: this.schedule.deskIndex * sectionHeight + "px",
-        left: this.schedule.section === 1 ? "7px" : "51%"
+        top: this.schedule.deskIndex * this.sectionHeight + "px",
+        left: this.schedule.section === 1 ? "7px" : "51%",
+        "z-index": zIndex
+      };
+
+      return this.isDeskSchedule ? overlayStyles : {};
+    },
+
+    setCardHeight() {
+      const coefficient = this.schedule.duration / this.scheduleDesk.step;
+      const overlayStyles = {
+        height: coefficient * this.sectionHeight + "px"
       };
       return this.isDeskSchedule ? overlayStyles : {};
+    },
+
+    getCardTimeEnd() {
+      const startInMinutes =
+        this.schedule.deskTimeStart.hour * 60 +
+        this.schedule.deskTimeStart.minutes;
+
+      const endInMinutes = startInMinutes + this.schedule.duration;
+
+      let hours = Math.floor(endInMinutes / 60);
+      let minutes = endInMinutes % 60;
+      const stringMinutes = minutes === 0 ? "00" : minutes;
+      return `${hours}:${stringMinutes}`;
     }
   },
 
   methods: {
     dragStart(event) {
-      const from = this.isDeskSchedule ? "deskList" : "scheduleList";
       const payload = JSON.stringify({
         schedule: this.schedule,
-        from
+        from: this.listType
       });
       event.dataTransfer.setData("schedule", payload);
     }
@@ -122,7 +169,15 @@ export default {
   &--overlay {
     position: absolute;
     width: 48%;
-    min-height: 59px;
+    min-height: 56px;
+    margin-bottom: 0;
+    .schedule-item__name {
+      align-self: flex-start;
+      padding-top: 7px;
+      padding-right: 10px;
+      max-width: initial;
+      text-align: right;
+    }
   }
 
   &:last-child {

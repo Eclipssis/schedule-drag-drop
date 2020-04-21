@@ -32,8 +32,8 @@ export default {
     },
 
     time: {
-      type: String,
-      default: ""
+      type: Object,
+      default: () => {}
     }
   },
 
@@ -52,7 +52,7 @@ export default {
 
   methods: {
     ...mapMutations({
-      addToDesk: "schedule/addToDesk"
+      moveScheduleCard: "schedule/moveScheduleCard"
     }),
 
     onDrop({ event, section }) {
@@ -60,12 +60,11 @@ export default {
         let { schedule, from } = JSON.parse(
           event.dataTransfer.getData("schedule")
         );
-        schedule.scheduleTime = this.time;
+
+        schedule.deskTimeStart = this.time;
         schedule.deskIndex = this.index;
         schedule.section = section;
-        if (from === "scheduleList") {
-          this.addToDesk(schedule);
-        }
+        this.moveScheduleCard({ schedule, from, to: "deskList" });
       }
     },
 
