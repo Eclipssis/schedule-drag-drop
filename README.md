@@ -8,6 +8,8 @@
 перетаскивать блоки по временной шкале
 ```
 
+![alt tag](https://github.com/Eclipssis/schedule-drag-drop/blob/master/SCHEDULER.jpg)​
+
 ## Project setup
 ```
 npm install
